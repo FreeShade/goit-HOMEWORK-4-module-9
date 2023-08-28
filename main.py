@@ -11,13 +11,30 @@ def input_error(func):
 contacts = {}
 
 
-@input_error
+def command_handler(command):
+    def decorator(func):
+        def wrapper(*args):
+            return func(*args)
+
+        if command in ["hello", "show all"]:
+            return input_error(wrapper)
+        elif command in ["add", "change", "phone"]:
+            return input_error(wrapper)
+        return wrapper
+
+    return decorator
+
+
+@command_handler("add")
 def add_contact(name, phone):
-    contacts[name] = phone
-    return f"Contact {name} with phone {phone} added."
+    if name in contacts:
+        return f"Contact {name} already exists. Use 'change' command to update the phone number."
+    else:
+        contacts[name] = phone
+        return f"Contact {name} with phone {phone} added."
 
 
-@input_error
+@command_handler("change")
 def change_phone(name, phone):
     if name in contacts:
         contacts[name] = phone
@@ -26,7 +43,7 @@ def change_phone(name, phone):
         return f"Contact {name} not found."
 
 
-@input_error
+@command_handler("phone")
 def get_phone(name):
     if name in contacts:
         return f"Phone number for {name}: {contacts[name]}"
@@ -34,6 +51,7 @@ def get_phone(name):
         return f"Contact {name} not found."
 
 
+@command_handler("show all")
 def show_all_contacts():
     if contacts:
         return "\n".join([f"{name}: {phone}" for name, phone in contacts.items()])
@@ -49,6 +67,8 @@ def main():
         if command == "good bye" or command == "close" or command == "exit":
             print("Good bye!")
             break
+        elif command == "hello":
+            print("How can I help you?")
         elif command == "show all":
             print(show_all_contacts())
         elif command.startswith("add"):
